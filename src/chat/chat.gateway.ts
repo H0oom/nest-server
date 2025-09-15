@@ -21,7 +21,7 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? 'https://api.h0oom.kro.kr' 
+      ? 'http://api.h0oom.kro.kr' 
       : '*',
     methods: ['GET', 'POST'],
   },
