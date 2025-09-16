@@ -31,7 +31,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private connectedUsers = new Map<number, Set<string>>(); // userId -> Set of socketIds
+  private connectedUsers = new Map<number, Set<string>>();
 
   constructor(
     private jwtService: JwtService,
@@ -47,7 +47,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client disconnected: ${client.id}`);
     
     if (client.userId) {
-      // 사용자 연결 목록에서 제거
       const userSockets = this.connectedUsers.get(client.userId);
       if (userSockets) {
         userSockets.delete(client.id);
@@ -169,27 +168,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
   ) {
     try {
-      if (!client.userId) {
-        client.emit('error', { message: 'Not authenticated' });
-        return;
-      }
-
       if (!data.message || data.message.trim() === '') {
         client.emit('error', { message: 'Message cannot be empty' });
         return;
       }
+      const userId = client.userId || 0;
+      const userName = client.user?.fullname || 'Anonymous';
 
       const message = await this.chatService.addMessage(
         data.room_id,
-        client.userId,
+        userId,
         data.message.trim(),
       );
 
       // 해당 방의 모든 사용자에게 메시지 브로드캐스트
       this.server.to(`room_${data.room_id}`).emit('new_message', {
         id: message.id.toString(),
-        user_id: client.userId.toString(),
-        user_name: client.user.fullname,
+        user_id: userId.toString(),
+        user_name: userName,
         message: message.message,
         created_at: message.createdAt.toISOString(),
       });
