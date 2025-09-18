@@ -31,7 +31,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  private connectedUsers = new Map<number, Set<string>>();
+  private connectedUsers = new Map<number, Set<string>>(); // userId -> Set of socketIds
 
   constructor(
     private jwtService: JwtService,
@@ -47,6 +47,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client disconnected: ${client.id}`);
     
     if (client.userId) {
+      // 사용자 연결 목록에서 제거
       const userSockets = this.connectedUsers.get(client.userId);
       if (userSockets) {
         userSockets.delete(client.id);
@@ -172,7 +173,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('error', { message: 'Message cannot be empty' });
         return;
       }
-      const userId = client.userId || 0;
+
+      // 인증된 사용자라면 사용자 정보 사용, 아니면 익명으로 처리
+      const userId = client.userId || 0; // 익명 사용자는 0으로 설정
       const userName = client.user?.fullname || 'Anonymous';
 
       const message = await this.chatService.addMessage(
@@ -187,7 +190,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         user_id: userId.toString(),
         user_name: userName,
         message: message.message,
-        created_at: message.createdAt.toISOString(),
+        created_at: message.createdAt.toISOString().replace(/\.\d{3}Z$/, 'Z'),
       });
     } catch (error) {
       client.emit('error', { message: 'Failed to send message' });

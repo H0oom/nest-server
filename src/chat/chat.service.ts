@@ -120,10 +120,11 @@ export class ChatService {
     });
 
     return messages.map(message => ({
-      id: message.id,
-      user: message.user.fullname,
+      id: message.id.toString(),
+      user_id: message.userId.toString(),
+      user_name: message.user.fullname,
       message: message.message,
-      created_at: message.createdAt.toISOString()
+      created_at: message.createdAt.toISOString().replace(/\.\d{3}Z$/, 'Z')
     }));
   }
 

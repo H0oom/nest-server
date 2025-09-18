@@ -6,7 +6,7 @@ export class HealthController {
     healthCheck() {
         return {
             status: 'ok',
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
         };
     }
 }

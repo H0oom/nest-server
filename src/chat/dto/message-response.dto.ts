@@ -1,6 +1,7 @@
 export class MessageResponseDto {
-  id: number;
-  user: string;
+  id: string;
+  user_id: string;
+  user_name: string;
   message: string;
   created_at: string;
 }
